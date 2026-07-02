@@ -6,6 +6,5 @@ __all__ = [
     "ast",
     "semantic",
     "generator",
-    "providers",
     "ui",
 ]

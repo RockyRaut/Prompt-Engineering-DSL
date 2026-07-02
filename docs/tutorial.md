@@ -1,24 +1,23 @@
-# Prompt DSL Tutorial
+# Prompt DSL Tutorial — Article Summarizer
 
-This document explains the Prompt DSL project in a teaching style, so you can present it clearly to your teacher.
+This document explains the Prompt DSL project in a teaching style, with a focus on the article summarization use case. You can present this to your teacher.
 
 ## 1. What is this project?
 
-This repository implements a small domain-specific language (DSL) for prompt engineering. It converts a simple text-based DSL into a structured AI prompt.
+This repository implements a small domain-specific language (DSL) for prompt engineering, configured as an **article summarization tool**. It converts a simple text-based DSL into a structured AI prompt that can summarize text files.
 
 It includes:
 - a lexer to split the DSL into tokens
 - a parser to build an AST (abstract syntax tree)
 - a semantic validator to catch wrong or missing declarations
 - a prompt generator to produce a final prompt string
-- provider adapters for different AI backends
 - a Streamlit UI to edit and visualize the DSL interactively
 
 ## 2. Why use a DSL here?
 
-A DSL lets you describe an AI task in a compact, structured way. Instead of writing prompts as free-form text, you use fixed keywords such as `ROLE`, `TASK`, `INPUT`, and `OUTPUT`.
+A DSL lets you describe a text summarization task in a compact, structured way. Instead of writing prompts as free-form text, you use fixed keywords such as `ROLE`, `TASK`, `INPUT`, and `OUTPUT`.
 
-That makes the prompt easier to parse, validate, and generate consistently.
+That makes the prompt easier to parse, validate, and generate consistently. For example, you can define different summarization tasks by changing the `TASK` and `CONSTRAINT` values, while keeping the same DSL structure.
 
 ---
 
@@ -39,30 +38,29 @@ The language uses these keywords:
 
 ### Example DSL file
 
-`samples/example.dsl`:
+`samples/example.dsl` (configured for article summarization):
 
 ```
-AGENT WasteBot
+AGENT ArticleSummarizer
 
-ROLE EnvironmentalExpert
+ROLE Summarizer
 
-TASK ClassifyWaste
+TASK Summarize the article in article.txt
 
-INPUT waste_image.jpg
+INPUT article.txt
 
-CONSTRAINT StepByStep
 CONSTRAINT Brief
 
-OUTPUT JSON
+OUTPUT TEXT
 ```
 
 What this means:
-- Agent name: `WasteBot`
-- Role: `EnvironmentalExpert`
-- Task: `ClassifyWaste`
-- Input: `waste_image.jpg`
-- Two constraints: `StepByStep` and `Brief`
-- Desired output format: `JSON`
+- Agent name: `ArticleSummarizer`
+- Role: `Summarizer` (AI acts as a helpful summarizer)
+- Task: `Summarize the article in article.txt`
+- Input: `article.txt` (the file containing the article to summarize)
+- Constraint: `Brief` (keep the summary concise)
+- Desired output format: `TEXT`
 
 ---
 
@@ -77,7 +75,7 @@ What this means:
 
 ### `prompt_dsl/__init__.py`
 - Marks `prompt_dsl` as a Python package.
-- Exports package modules: `lexer`, `parser`, `ast`, `semantic`, `generator`, `providers`, and `ui`.
+- Exports package modules: `lexer`, `parser`, `ast`, `semantic`, `generator`, and `ui`.
 
 ### `prompt_dsl/main.py`
 - CLI entry point.
@@ -141,58 +139,38 @@ Why this matters:
 - Builds the final prompt text from the AST.
 - Takes only the first agent in the current implementation.
 - Converts known roles into nicer role descriptions using `ROLE_TEMPLATES`.
+- For the Summarizer role, it produces: `"You are a helpful summarizer."`
 - Writes the task, input, constraints, memory, tools, RAG, and output rules.
 - Joins the parts into a readable prompt.
 
 Example output from `samples/example.dsl`:
 
 ```
-You are an Environmental Expert.
+You are a helpful summarizer.
 
 Task:
-ClassifyWaste
+Summarize the article in article.txt
 
-Input: waste_image.jpg
+Input: article.txt
 
 Instructions:
-- Provide step-by-step reasoning.
 - Keep the response concise.
 
-Return response as JSON.
+Return response as TEXT.
 ```
 
 Why this matters:
 - Prompt generation is the main goal of the DSL: turn structured input into an AI-ready instruction.
 
-### `prompt_dsl/providers/base_provider.py`
-- Defines `BaseProvider`, a simple abstract interface.
-- `generate(prompt)` is the method every provider should implement.
-
-### `prompt_dsl/providers/openai_provider.py`
-- Implements `OpenAIProvider` as a mock adapter.
-- In this project, it returns a placeholder response string.
-- Designed to be replaced later with a real OpenAI SDK call.
-
-### `prompt_dsl/providers/gemini_provider.py`
-- Implements `GeminiProvider` as another mock adapter.
-- Also returns a placeholder response.
-
-### `prompt_dsl/providers/ollama_provider.py`
-- Implements `OllamaProvider` as a mock adapter.
-- Returns a placeholder response.
-
-Why this matters:
-- Provider adapters decouple prompt creation from the backend that runs the model.
-- This helps the project scale to multiple AI services.
-
 ### `prompt_dsl/ui/streamlit_app.py`
 - Provides an interactive editor and viewer for the DSL.
+- Title: "Prompt DSL — Article Summarizer"
+- Pre-loaded with the article summarization example.
 - Shows:
   - token list
   - parsed AST
   - validation results
   - generated prompt
-  - mock provider response
 - Useful for teaching because it makes the pipeline visible step-by-step.
 
 ---
@@ -205,27 +183,27 @@ When you run the CLI or UI, the project follows this pipeline:
    - reads DSL lines
    - converts them to tokens
 
-2. `Parser(tokens).parse()`
+2. `Parser(source).parse()`
    - builds a `ProgramNode` AST
 
 3. `Validator.validate(program)`
    - checks if the program is semantically valid
 
 4. `PromptGenerator.generate(program)`
-   - creates the final prompt string
+   - creates a prompt for article summarization
 
-5. Provider (optional)
-   - `OpenAIProvider.generate(prompt)` or another provider may produce a response
+5. The project is self-contained.
+   - It generates prompts locally and does not call any external AI backend.
 
-This is the simplest useful architecture for a DSL.
+This is the simplest useful architecture for a self-contained DSL.
 
 ---
 
 ## 6. How to explain it in class
 
 ### Start with the idea
-- "This code is a mini language for building AI prompts."
-- "It lets us describe the prompt using fixed sections instead of free-form text."
+- "This code is a mini language for defining AI summarization tasks."
+- "It lets us describe what we want summarized using fixed sections instead of free-form text."
 
 ### Walk through the layers
 - "First, the lexer turns text into tokens."
@@ -234,9 +212,10 @@ This is the simplest useful architecture for a DSL.
 - "The generator turns the structured data into a real prompt."
 
 ### Use the example
-- Show the DSL source
-- Show the generated prompt
-- Emphasize that the same DSL would generate consistent prompts every time
+- Show the DSL source from `samples/example.dsl`
+- Show the generated summarization prompt
+- Emphasize that changing the TASK or CONSTRAINT updates the generated prompt automatically
+- Demo: edit the DSL in the Streamlit UI and watch the prompt regenerate in real-time
 
 ### Mention the UI
 - The Streamlit app is a teaching tool: it displays tokens, AST, validation, and prompt output.
@@ -246,9 +225,10 @@ This is the simplest useful architecture for a DSL.
 ## 7. Additional details to remember
 
 - The current parser supports only one agent in practice.
+- The project is focused on article summarization as its primary use case.
 - The validator is simple and can be extended with more rules.
-- The provider classes are stubs for future real integrations.
 - The AST is a clean separation point between parsing and generation.
+- The `article.txt` file in the project root is the input that the example DSL references.
 
 ---
 
@@ -259,16 +239,18 @@ Use these commands:
 - CLI: `python -m prompt_dsl.main samples/example.dsl`
 - UI: `streamlit run prompt_dsl/ui/streamlit_app.py`
 
-If you want to teach it, open `samples/example.dsl`, change the DSL text, and watch how the output changes.
+If you want to teach it, try editing `article.txt` or the DSL in `samples/example.dsl`, and watch how the generated prompt changes.
 
 ---
 
 ## 9. Suggested way to present this
 
-1. Show the DSL file.
-2. Explain each keyword.
-3. Describe the pipeline.
-4. Show the generated prompt.
-5. Mention where to add new keywords or new validation rules.
+1. Show the article text in `article.txt`.
+2. Show the DSL file `samples/example.dsl`.
+3. Explain each keyword and its role in the summarization task.
+4. Describe the pipeline (lex → parse → validate → generate).
+5. Show the generated prompt.
+6. Run the example in Streamlit and demonstrate editing the DSL live.
+7. Mention where to add new keywords or new validation rules.
 
-This gives your teacher a complete view of both the code and the design.
+This gives your teacher a complete view of both the code and the design, and demonstrates the end-to-end workflow.

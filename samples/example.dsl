@@ -1,12 +1,11 @@
-AGENT chatBot
+AGENT ArticleSummarizer
 
-ROLE EnvironmentalExpert
+ROLE Summarizer
 
-TASK ClassifyWaste
+TASK Summarize the article in article.txt
 
-INPUT
+INPUT article.txt
 
-CONSTRAINT StepByStep
 CONSTRAINT Brief
 
-OUTPUT JSON
+OUTPUT TEXT

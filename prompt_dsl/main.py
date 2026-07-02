@@ -16,7 +16,7 @@ def main(argv=None):
         src = f.read()
 
     tokens = Lexer.tokenize(src)
-    parser = Parser(tokens)
+    parser = Parser(src)
     program = parser.parse()
 
     errors = Validator.validate(program)

@@ -9,7 +9,6 @@ from prompt_dsl.lexer.lexer import Lexer
 from prompt_dsl.parser.parser import Parser
 from prompt_dsl.semantic.validator import Validator
 from prompt_dsl.generator.prompt_generator import PromptGenerator
-from prompt_dsl.providers.openai_provider import OpenAIProvider
 
 
 def run(path: str):
@@ -24,7 +23,7 @@ def run(path: str):
     for t in tokens:
         print(f"{t.line}: {t.type} -> {t.value}")
 
-    parser = Parser(tokens)
+    parser = Parser(src)
     program = parser.parse()
 
     print("\n--- AST (dict) ---")
@@ -41,11 +40,6 @@ def run(path: str):
     prompt = PromptGenerator.generate(program)
     print("\n--- GENERATED PROMPT ---")
     print(prompt)
-
-    provider = OpenAIProvider()
-    resp = provider.generate(prompt)
-    print("\n--- PROVIDER RESPONSE (mock) ---")
-    print(resp)
 
 
 if __name__ == "__main__":

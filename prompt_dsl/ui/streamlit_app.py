@@ -13,13 +13,16 @@ from prompt_dsl.lexer.lexer import Lexer
 from prompt_dsl.parser.parser import Parser
 from prompt_dsl.semantic.validator import Validator
 from prompt_dsl.generator.prompt_generator import PromptGenerator
-from prompt_dsl.providers.openai_provider import OpenAIProvider
 
 
 def main():
-    st.title("Prompt DSL — Editor")
+    st.title("Prompt DSL — Article Summarizer")
+    st.caption("This example is configured to summarize the contents of article.txt.")
 
-    sample = st.session_state.get("sample", "AGENT WasteBot\n\nROLE EnvironmentalExpert\n\nTASK ClassifyWaste\n\nINPUT waste_image.jpg\n\nCONSTRAINT StepByStep\nCONSTRAINT Brief\n\nOUTPUT JSON")
+    sample = st.session_state.get(
+        "sample",
+        "AGENT ArticleSummarizer\n\nROLE Summarizer\n\nTASK Summarize the article in article.txt\n\nINPUT article.txt\n\nCONSTRAINT Brief\n\nOUTPUT TEXT",
+    )
 
     code = st.text_area("DSL Editor", value=sample, height=300)
 
@@ -28,7 +31,7 @@ def main():
         st.subheader("Tokens")
         st.write([t.__dict__ for t in tokens])
 
-        parser = Parser(tokens)
+        parser = Parser(code)
         program = parser.parse()
 
         st.subheader("AST")
@@ -45,11 +48,6 @@ def main():
         st.subheader("Generated Prompt")
         prompt = PromptGenerator.generate(program)
         st.code(prompt)
-
-        st.subheader("Run (mock)")
-        provider = OpenAIProvider()
-        resp = provider.generate(prompt)
-        st.text_area("Provider Response", value=resp, height=200)
 
 
 if __name__ == "__main__":

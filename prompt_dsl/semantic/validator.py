@@ -15,13 +15,9 @@ class Validator:
     def validate(program: ProgramNode) -> List[SemanticError]:
         errors: List[SemanticError] = []
 
-        # Enforce single-agent / single-role for initial validator
         if len(program.agents) == 0:
             errors.append(SemanticError("No agent declared."))
             return errors
-
-        if len(program.agents) > 1:
-            errors.append(SemanticError("Multiple AGENT declarations found. Only one is allowed."))
 
         agent = program.agents[0]
 

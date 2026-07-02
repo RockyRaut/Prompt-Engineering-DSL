@@ -10,9 +10,6 @@ class AgentNode:
     inputs: List[str] = field(default_factory=list)
     constraints: List[str] = field(default_factory=list)
     output: Optional[str] = None
-    memory: Optional[bool] = None
-    rag: Optional[bool] = None
-    tools: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -30,9 +27,6 @@ class ProgramNode:
                 "input": a.inputs[0] if a.inputs else None,
                 "constraints": a.constraints,
                 "output": a.output,
-                "memory": a.memory,
-                "rag": a.rag,
-                "tools": a.tools,
             }
 
         return {"agents": [a.__dict__ for a in self.agents]}
